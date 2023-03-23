@@ -20,6 +20,14 @@ jobs:
   steps:
   - uses: actions/checkout@v3
 
+  - name: banking
+    run: |
+        cd ${{ github.workspace }}/banking
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config ${{env.BUILD_TYPE}}
+
   - name: Adding gtest
     run: git clone https://github.com/google/googletest.git third-party/gtest -b release-1.11.0
 
