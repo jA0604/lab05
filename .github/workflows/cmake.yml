@@ -22,7 +22,8 @@ jobs:
 
   - name: banking
     run: |
-      mkdir ${{ github.workspace }}/banking/build
+      cd ${{ github.workspace }}/banking
+      mkdir build
       cmake --build . 
 
   - name: Adding gtest
