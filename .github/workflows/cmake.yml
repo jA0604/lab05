@@ -32,6 +32,12 @@ jobs:
   - name: Build banking
     run: cmake —build ${{github.workspace}}/build
 
+  - name: mkdir tests
+    run: |
+         cd ${{ github.workspace }}
+         mkdir tests
+    
+    
   - name: Run tests
     run: build/check
     
