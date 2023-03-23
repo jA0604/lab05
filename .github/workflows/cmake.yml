@@ -25,7 +25,7 @@ jobs:
           cd ${{ github.workspace }}/banking
           mkdir build
           cd build
-          cd ..  %CMAKE_CONFIGURE_FLAGS%     # содержит нужный CMake-генератор
+          cmake .. %CMAKE_CONFIGURE_FLAGS%     # содержит нужный CMake-генератор
           cmake --build . %CMAKE_BUILD_FLAGS%
 
 #          cmake --build . 
