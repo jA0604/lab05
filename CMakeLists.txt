@@ -1,38 +1,31 @@
-name: CMake
-
-on:
- push:
-  branches: [main]
- pull_request:
-  branches: [main]
-
-jobs: 
- build_Linux:
-
-  runs-on: ubuntu-latest
-
-  steps:
-  - uses: actions/checkout@v3
-
-  - name: Adding gtest
-    run: git clone https://github.com/google/googletest.git third-party/gtest -b release-1.11.0
-
-  - name: Install lcov
-    run: sudo apt-get install -y lcov
-
-  - name: Config banking with tests
-    run: cmake -H. -B ${{github.workspace}}/build -DBUILD_TESTS=ON
-
-  - name: Build banking
-    run: cmake —build ${{github.workspace}}/build
-
-  - name: Run tests
-    run: build/check
-    
-  - name: Do lcov stuff
-    run: lcov -c -d build/CMakeFiles/banking.dir/banking/ —include *.cpp —output-file ./coverage/lcov.info
-
-  - name: Publish to coveralls.io
-    uses: coverallsapp/github-action@v1.1.2
-    with:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+cmake_minimum_required(VERSION 3.4)
+  
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  
+  #Добавляем опцию BUILD_TESTS. Если она включена, вместе с самой библиотекой собираются тесты 
+  option(BUILD_TESTS "Build tests" OFF)
+  
+  if(BUILD_TESTS)                   # Если надо собрать тесты, добавляем опцию компилятора —coverage,
+    add_compile_options(--coverage) # которая оставляет после прогонки кода отчёт о покрытии
+  endif()
+  
+  project (banking)
+  
+  #Делаем библиотеку banking и добавляем директорию с заголовками
+  add_library(banking STATIC ${CMAKE_CURRENT_SOURCE_DIR}/banking/Transaction.cpp ${CMAKE_CURRENT_SOURCE_DIR}/banking/Account.cpp)
+  target_include_directories(banking PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/banking )
+  
+  #Линкуем к библиотеке gcov - он нужен для отчётов о покрытии
+  target_link_libraries(banking gcov)
+  
+  #Собираем тесты из исходников, лежащих в директории tests
+  if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(third-party/gtest)
+    file(GLOB BANKING_TEST_SOURCES tests/*.cpp)
+    add_executable(check ${BANKING_TEST_SOURCES})
+    target_link_libraries(check banking gtest_main)
+    add_test(NAME check COMMAND check)
+  endif()
